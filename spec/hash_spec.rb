@@ -51,12 +51,30 @@ DumbHash::IMPLEMENTATIONS.each do |klass|
         @hash.set(:key, some_obj)
         @hash.get(:key).should == some_obj
       end
+      
+      it "should overwrite old value for key" do
+        @hash.set(:key, 1)
+        @hash.set(:key, 2)
+        @hash.get(:key).should == 2
+      end
     end
     
     describe "#{klass}#[] and #{klass}#[]=" do
       it "should get and set using brackets" do
         @hash[:key] = 'val'
         @hash[:key].should == 'val'
+      end
+    end
+    
+    describe "#{klass}#each" do
+      it "should enumerate in order" do
+        ([[:one, 1],[:two, 2],[:three, 3],[:four, 4]]).each do |k,v|
+          @hash[k] = v
+        end
+        a = []
+        @hash.each {|e| a << e}
+        a.should == [[:one,1],[:two,2],[:three,3],[:four,4]]
+        
       end
     end
 

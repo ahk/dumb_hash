@@ -15,6 +15,7 @@ module DumbHash
     end
   
     def set(key, value)
+      @elements.delete_if {|e| e[0] == key }
       @elements << [key, value]
     end
     alias_method :'[]=', :set
@@ -24,6 +25,12 @@ module DumbHash
       pair ? pair.last : @default_value
     end
     alias_method :'[]', :get
+    
+    def each(&block)
+      @elements.each do |e|
+        yield e
+      end
+    end
   
   end
 
@@ -44,6 +51,7 @@ module DumbHash
     end
   
     def set(key, value)
+      @elements.delete_if {|e| e[0] == key}
       @elements << [key, value]
       @hashes2indexes << [key.hash, @elements.size - 1]
     end
@@ -55,10 +63,18 @@ module DumbHash
       hash2index ? @elements[hash2index[1]][1] : @default_value
     end
     alias_method :'[]', :get
+    
+    def each(&block)
+      @elements.each do |e|
+        yield e
+      end
+    end
 
   end
   
   class HashedKeyTree
+    MAX_OBJECT_ID_DIGITS = 7
+    
     def initialize(default_value=nil)
       @default_value = default_value
       @elements = []
@@ -75,6 +91,7 @@ module DumbHash
     end
   
     def set(key, value)
+      remove_old(key)
       @elements << [key, value]
       pack_key_and_index(key, @elements.size - 1)
     end
@@ -86,7 +103,17 @@ module DumbHash
     end
     alias_method :'[]', :get
     
+    def each(&block)
+      @elements.each do |e|
+        yield e
+      end
+    end
+    
     private
+      def remove_old(key)
+        old_index = find_index_for_key(key)
+        @elements.delete_at(old_index) if old_index
+      end
     
       def find_index_for_key(key)
         hash = key.object_id
@@ -104,7 +131,7 @@ module DumbHash
       # nodes to traverse in order
       def branch_for(hash)
         branch = hash.to_s.split('')
-        zeros = 7 - branch.size
+        zeros = MAX_OBJECT_ID_DIGITS - branch.size
         zeros.times {branch.unshift 0}
         branch.map {|e| e.to_i}
       end

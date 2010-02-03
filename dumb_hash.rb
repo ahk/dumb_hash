@@ -14,10 +14,10 @@ module DumbHash
       @default_value = default_value
     end
   
-    def add(key, value)
+    def set(key, value)
       @elements << [key, value]
     end
-    alias_method :'[]=', :add
+    alias_method :'[]=', :set
   
     def get(key)
       pair = @elements.find {|k,v| k == key}
@@ -43,11 +43,11 @@ module DumbHash
       @default_value = default_value
     end
   
-    def add(key, value)
+    def set(key, value)
       @elements << [key, value]
       @hashes2indexes << [key.hash, @elements.size - 1]
     end
-    alias_method :'[]=', :add
+    alias_method :'[]=', :set
   
     def get(key)
       key_hash = key.hash
@@ -63,7 +63,7 @@ module DumbHash
       @default_value = default_value
       @elements = []
       @hashes_tree = []
-      @elements.each_with_index {|e,i| pack_hash_and_index(e[0].hash,i)}
+      @elements.each_with_index {|e,i| pack_hash_and_index(e[0].object_id,i)}
     end
   
     def default_value
@@ -74,14 +74,14 @@ module DumbHash
       @default_value = default_value
     end
   
-    def add(key, value)
+    def set(key, value)
       @elements << [key, value]
-      pack_hash_and_index(key.hash, @elements.size - 1)
+      pack_hash_and_index(key.object_id, @elements.size - 1)
     end
-    alias_method :'[]=', :add
+    alias_method :'[]=', :set
   
     def get(key)
-      index = find_index_for_hash(key.hash)
+      index = find_index_for_hash(key.object_id)
       index ? @elements[index][1] : @default_value
     end
     alias_method :'[]', :get
@@ -95,7 +95,7 @@ module DumbHash
       # build this branch onto the tree
       def pack_hash_and_index(hash, index)
         branch = branch_for(hash).push(index)
-        add_branch_to_parent(@hashes_tree, branch)
+        set_branch_to_parent(@hashes_tree, branch)
       end
       
       # nodes to traverse in order, prepend a 0 instead of a '-'
@@ -106,7 +106,7 @@ module DumbHash
       end
       
       # tend the tree
-      def add_branch_to_parent(parent, branch)
+      def set_branch_to_parent(parent, branch)
         node = branch.shift
         if branch.size == 1
           parent[node] = branch[0]
@@ -114,7 +114,7 @@ module DumbHash
         else
           parent[node] ||= []
         end
-        add_branch_to_parent(parent[node], branch)
+        set_branch_to_parent(parent[node], branch)
       end
       
       # find terminal value, else return nil

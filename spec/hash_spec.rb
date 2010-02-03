@@ -27,16 +27,16 @@ DumbHash::IMPLEMENTATIONS.each do |klass|
       end
     end
   
-    describe "#{klass}#get and #{klass}#add" do
+    describe "#{klass}#get and #{klass}#set" do
 
-      it "should let you add and get a pair" do
-        @hash.add(:key, 'val')
+      it "should let you set and get a pair" do
+        @hash.set(:key, 'val')
         @hash.get(:key).should == 'val'
       end
     
       it "should allow multiple elements in hash" do
-        @hash.add(:key, 'val')
-        @hash.add(:key1, 'val1')
+        @hash.set(:key, 'val')
+        @hash.set(:key1, 'val1')
         @hash.get(:key).should == 'val'
         @hash.get(:key1).should == 'val1'
       end
@@ -48,7 +48,7 @@ DumbHash::IMPLEMENTATIONS.each do |klass|
     
       it "should allow non-string values" do
         some_obj = Object.new
-        @hash.add(:key, some_obj)
+        @hash.set(:key, some_obj)
         @hash.get(:key).should == some_obj
       end
     end

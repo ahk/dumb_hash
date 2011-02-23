@@ -79,7 +79,7 @@ module DumbHash
       @default_value = default_value
       @elements = []
       @hashes_tree = []
-      @elements.each_with_index {|e,i| pack_hash_and_index(e[0],i)}
+      @elements.each_with_index {|e,i| pack_key_and_index(e[0],i)}
     end
   
     def default_value

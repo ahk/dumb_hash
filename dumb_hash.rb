@@ -77,10 +77,7 @@ module DumbHash
     end
   
     def set(key, value)
-      unless update_element_for_key(key, value)
-        @elements << [key, value]
-        pack_key_and_index(key, @elements.size - 1)
-      end
+      add_element(key, value) unless update_element_for_key(key, value)
     end
   
     def get(key)
@@ -98,6 +95,11 @@ module DumbHash
           updated = true
         end
         updated
+      end
+
+      def add_element(key, value)
+        @elements << [key, value]
+        pack_key_and_index(key, @elements.size - 1)
       end
     
       def find_index_for_key(key)

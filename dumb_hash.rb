@@ -1,53 +1,57 @@
 module DumbHash
-  
-  class Dumbest
+
+  class Base
     def initialize(default_value=nil)
       @default_value = default_value
       @elements = []
-    end
-  
+    end 
+
     def default_value
       @default_value
     end
-  
+
     def default_value=(default_value)
       @default_value = default_value
     end
+
+    def each(&block)
+      @elements.each(&block)
+    end
+
+    def set(*args)
+      raise NotImplementedError
+    end
+    
+    def get(*args)
+      raise NotImplementedError
+    end
+
+    def [](*args)
+      self.get(*args)
+    end
+
+    def []=(*args)
+      self.set(*args)
+    end
+  end
   
+  class Dumbest < Base
     def set(key, value)
       @elements.delete_if {|e| e[0] == key }
       @elements << [key, value]
     end
-    alias_method :'[]=', :set
   
     def get(key)
       pair = @elements.find {|k,v| k == key}
       pair ? pair.last : @default_value
     end
-    alias_method :'[]', :get
-    
-    def each(&block)
-      @elements.each do |e|
-        yield e
-      end
-    end
-  
   end
 
-  class HashedKeyComparison
+  class HashedKeyComparison < Base
     def initialize(default_value=nil)
-      @default_value = default_value
-      @elements = []
+      super
       @hashes2indexes = []
       @elements.each_with_index {|e,i| @hashes2indexes << [e[0].hash,i]}
-    end
-  
-    def default_value
-      @default_value
-    end
-  
-    def default_value=(default_value)
-      @default_value = default_value
     end
   
     def set(key, value)
@@ -55,39 +59,21 @@ module DumbHash
       @elements << [key, value]
       @hashes2indexes << [key.hash, @elements.size - 1]
     end
-    alias_method :'[]=', :set
   
     def get(key)
       key_hash = key.hash
       hash2index = @hashes2indexes.find {|hash,i| hash == key_hash}
       hash2index ? @elements[hash2index[1]][1] : @default_value
     end
-    alias_method :'[]', :get
-    
-    def each(&block)
-      @elements.each do |e|
-        yield e
-      end
-    end
-
   end
   
-  class HashedKeyTree
+  class HashedKeyTree < Base
     MAX_OBJECT_ID_DIGITS = 7
     
     def initialize(default_value=nil)
-      @default_value = default_value
-      @elements = []
+      super
       @hashes_tree = []
       @elements.each_with_index {|e,i| pack_key_and_index(e[0],i)}
-    end
-  
-    def default_value
-      @default_value
-    end
-  
-    def default_value=(default_value)
-      @default_value = default_value
     end
   
     def set(key, value)
@@ -95,18 +81,10 @@ module DumbHash
       @elements << [key, value]
       pack_key_and_index(key, @elements.size - 1)
     end
-    alias_method :'[]=', :set
   
     def get(key)
       index = find_index_for_key(key)
       index ? @elements[index][1] : @default_value
-    end
-    alias_method :'[]', :get
-    
-    def each(&block)
-      @elements.each do |e|
-        yield e
-      end
     end
     
     private

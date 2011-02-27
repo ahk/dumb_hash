@@ -51,12 +51,13 @@ module DumbHash
     def initialize(default_value=nil)
       super
       @hashes2indexes = []
-      @elements.each_with_index {|e,i| @hashes2indexes << [e[0].hash,i]}
     end
   
     def set(key, value)
       @elements.delete_if {|e| e[0] == key}
       @elements << [key, value]
+
+      @hashes2indexes.delete_if {|e| e[0] == key.hash}
       @hashes2indexes << [key.hash, @elements.size - 1]
     end
   
@@ -73,13 +74,13 @@ module DumbHash
     def initialize(default_value=nil)
       super
       @hashes_tree = []
-      @elements.each_with_index {|e,i| pack_key_and_index(e[0],i)}
     end
   
     def set(key, value)
-      remove_old(key)
-      @elements << [key, value]
-      pack_key_and_index(key, @elements.size - 1)
+      unless update_element_for_key(key, value)
+        @elements << [key, value]
+        pack_key_and_index(key, @elements.size - 1)
+      end
     end
   
     def get(key)
@@ -88,9 +89,15 @@ module DumbHash
     end
     
     private
-      def remove_old(key)
-        old_index = find_index_for_key(key)
-        @elements.delete_at(old_index) if old_index
+
+      def update_element_for_key(key, value)
+        updated = false
+        index = find_index_for_key(key)
+        if index
+          @elements[index][1] = value
+          updated = true
+        end
+        updated
       end
     
       def find_index_for_key(key)

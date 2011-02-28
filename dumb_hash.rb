@@ -7,7 +7,11 @@ module DumbHash
     end 
 
     def default_value
-      @default_value
+      begin
+        @default_value.clone
+      rescue TypeError => e
+        @default_value
+      end
     end
 
     def default_value=(default_value)
@@ -43,7 +47,13 @@ module DumbHash
   
     def get(key)
       pair = @elements.find {|k,v| k == key}
-      pair ? pair.last : @default_value
+      if pair
+        value = pair.last
+      else
+        value = self.default_value
+        self.set(key, value)
+      end
+      value
     end
   end
 
@@ -64,7 +74,13 @@ module DumbHash
     def get(key)
       key_hash = key.hash
       hash2index = @hashes2indexes.find {|hash,i| hash == key_hash}
-      hash2index ? @elements[hash2index[1]][1] : @default_value
+      if hash2index
+        value = @elements[hash2index[1]][1]
+      else
+        value = self.default_value
+        self.set(key, value)
+      end
+      value
     end
   end
   
@@ -82,7 +98,13 @@ module DumbHash
   
     def get(key)
       index = find_index_for_key(key)
-      index ? @elements[index][1] : @default_value
+      if index
+        value = @elements[index][1]
+      else
+        value = self.default_value
+        self.set(key, value)
+      end
+      value
     end
     
     private
